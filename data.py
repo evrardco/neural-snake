@@ -8,8 +8,12 @@ from time import time
 from numba import jit
 from helper import is_opposite
 from rewards import *
+from julia import Main
+Main.include("julia/data_getters.jl")
+J_DataGetters = Main.DataGetters
 DTYPE = torch.float32
 DEVICE = torch.device("cpu")
+
 def isclose(a, b):
     return abs(a - b) < 0.0001
 def get_data(state):

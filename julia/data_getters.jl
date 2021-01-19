@@ -23,8 +23,8 @@ module DataGetters
         dir = state[DIR]
         hx, hy = state[HEAD]
         fx, fy = state[FOOD]
-        append!(xs, hx, hy)
-        append!(xs, fx, fy)
+        xs = vcat(xs, [hx, hy])
+        xs = vcat(xs, [fx, fy])
         goal = NEUTRAL_RESPONSE 
         dist = abs(fx - hx) + abs(fy - hy)
         append!(xs, dist)
@@ -35,12 +35,13 @@ module DataGetters
         
         dist_wall_x = min(abs(hx - WIDTH), hx)
         dist_wall_y = min(abs(hy - HEIGHT), hy)
-        append!(xs, dist_wall_x, dist_wall_y)
+        xs = vcat(xs, [dist_wall_x, dist_wall_y])
         min_wall_dist = min(dist_wall_x, dist_wall_y)
 
         append!(xs, state[DIR])
         append!(xs, size(state[BODY]))
         append!(xs, state[HUNGER])
+        return (xs, [goal])
     end
 
     function data_sensory(state, border_look_ahead=5)
@@ -53,8 +54,8 @@ module DataGetters
             sensed = [0.0, 0.0, 0.0]
             for j in 0:max(WIDTH, HEIGHT)
                 mul = 1.0
-                x = hx + j * TILE_SIZE * cos(radians(alpha))
-                y = hy + j * TILE_SIZE * cos(radians(alpha))
+                x = hx + j * TILE_SIZE * cos(deg2rad(alpha))
+                y = hy + j * TILE_SIZE * cos(deg2rad(alpha))
                 if isapprox(x, fx) && isapprox(y, fy)
                     sensed[1] = 1 / (1 + j + convert(Int8, rand(Float32) * 2))
                 end
@@ -69,11 +70,12 @@ module DataGetters
                         end
                     end
                 end
+            append!(data, sensed)
             end
         end
-        append!(data, sensed)
+        
         append!(data, abs(fx - hx) + abs(fy - hy))
-        _, y = get_data(state)
+        _, y = data_sensory(state)
         return (data, y)
 
     end

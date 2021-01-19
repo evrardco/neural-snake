@@ -11,8 +11,8 @@ import rewards
 import random
 clk = pygame.time.Clock()
 fps = DEFAULT_FPS
-new_model = lambda : data.get_model(13, 30, 2, 0.0001, encoder_size=8)
-data_getter = data.get_data_sensory
+new_model = lambda : data.get_model(10, 30, 2, 0.0001, encoder_size=8)
+data_getter = data.J_DataGetters.data_simple
 #new_model = lambda : data.get_rnn_model(24, 30, 4, 0.01)
 prob_decay = 0.2
 prob_rand = 1.0
