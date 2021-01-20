@@ -61,7 +61,7 @@ def get_data_sensory(state, border_look_ahead=1000):
     data = []
     for alpha in range(0, 360, 90):
         sensed = [0.0, 0.0, 0.0]
-        for j in range(max(WIDTH, HEIGHT)):
+        for j in range(max(WIDTH, HEIGHT)//TILE_SIZE):
             mul = 1.0
             if isclose(alpha, dir):
                 mul = POSITIVE_RESPONSE * is_opposite(alpha, dir)
