@@ -78,15 +78,19 @@ module DataGetters
         end
         #Computing how many neighbouring tiles from the head are occupied
         #by the snake's body.
-        closeness = 0
-        for tx in (hx - TILE_SIZE):TILE_SIZE:(hx + TILE_SIZE)
-            for ty in (hy - TILE_SIZE):TILE_SIZE:(hy + TILE_SIZE)
-                for (px, py) in body[2:end] #2 to not take the head into account
-                    if isapprox(px, tx) && isapprox(py, ty)
-                        closeness += 1
+        radius = 3
+        for r in 1:radius
+            closeness = 0
+            for tx in (hx - r * TILE_SIZE):TILE_SIZE:(hx + r * TILE_SIZE)
+                for ty in (hy - r * TILE_SIZE):TILE_SIZE:(hy + r * TILE_SIZE)
+                    for (px, py) in body[2:end] #2 to not take the head into account
+                        if isapprox(px, tx) && isapprox(py, ty)
+                            closeness += 1
+                        end
                     end
                 end
             end
+            append!(data, closeness)
         end
         xs, y = data_simple(state)
         return (vcat(data, xs), y)

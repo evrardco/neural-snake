@@ -18,7 +18,7 @@ The AI part is however undocumented, dirty and unreadable at the moment.
 - PyJulia
 - Pytorch
 - pygame
-- Both Julia and python in the 
+- Both Julia and Python in the PATH.
 ## How to run
 Follow the procedure of PyJulia configuration. 
 ### Windows
