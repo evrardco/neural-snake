@@ -35,7 +35,10 @@ module DataGetters
         
         dist_wall_x = min(abs(hx - WIDTH), hx)
         dist_wall_y = min(abs(hy - HEIGHT), hy)
+        dist_wall_food_x = min(abs(fx - WIDTH), fx)
+        dist_wall_food_y = min(abs(fy - HEIGHT), fy)
         xs = vcat(xs, [dist_wall_x, dist_wall_y])
+        xs = vcat(xs, [dist_wall_food_x, dist_wall_food_y])
         min_wall_dist = min(dist_wall_x, dist_wall_y)
 
         append!(xs, state[DIR])
@@ -73,7 +76,18 @@ module DataGetters
             append!(data, sensed)
 
         end
-        
+        #Computing how many neighbouring tiles from the head are occupied
+        #by the snake's body.
+        closeness = 0
+        for tx in (hx - TILE_SIZE):TILE_SIZE:(hx + TILE_SIZE)
+            for ty in (hy - TILE_SIZE):TILE_SIZE:(hy + TILE_SIZE)
+                for (px, py) in body[2:end] #2 to not take the head into account
+                    if isapprox(px, tx) && isapprox(py, ty)
+                        closeness += 1
+                    end
+                end
+            end
+        end
         xs, y = data_simple(state)
         return (vcat(data, xs), y)
 
