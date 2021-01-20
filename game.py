@@ -16,7 +16,7 @@ clk = pygame.time.Clock()
 
 
 fps = DEFAULT_FPS
-new_model = lambda : data.get_model(19, 25, 1, 0.0001, encoder_size=10)
+new_model = lambda : data.get_model(21, 30, 1, 0.0001, encoder_size=10)
 data_getter = data.J_DataGetters.data_sensory
 #new_model = lambda : data.get_rnn_model(24, 30, 4, 0.01)
 prob_decay = 0.2
@@ -66,7 +66,9 @@ def main():
                 if state[SCORE] > old_score:
                     old_score = state[SCORE]
                     print(f"Added positive response: {rewards.POSITIVE_RESPONSE}")
-                    xs, ys = data.retro_affect(xs, ys, rewards.POSITIVE_RESPONSE, horizon=20)
+                    xs, ys = data.retro_affect(xs, ys, rewards.POSITIVE_RESPONSE, horizon=30)
+                    xs = xs[len(xs) - 30:]
+                    ys = ys[len(ys) - 30:]
                     print(ys[len(ys) - 20:])
 
 
@@ -86,10 +88,12 @@ def main():
 
 
             if state[HUNGER] < MAX_HUNGER:
-                xs, ys = data.retro_affect(xs, ys, rewards.NEGATIVE_RESPONSE, horizon=20)
-
-                data_x += xs
-                data_y += ys                
+                xs, ys = data.retro_affect(xs, ys, rewards.NEGATIVE_RESPONSE, horizon=30)
+                xs = xs[len(xs) - 30:]
+                ys = ys[len(ys) - 30:]
+                if state[SCORE] > 0 or random.random() < 0.1:
+                    data_x += xs
+                    data_y += ys            
         prob_rand *= prob_decay
         #model = new_model()
         data.learn((data_x, data_y), 500, model, torch.optim.Adagrad(model.parameters()),torch.nn.MSELoss())
