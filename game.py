@@ -2,22 +2,26 @@ from consts import *
 import game_logic
 
 import data
-
+import helper
 import torch
 import sys
 import time
 import rewards
 import random
-
+from os.path import join
 import graphics
 import keyboard
 import pygame
+from AI.nn_auto_encoder import NNAutoEncoder
 clk = pygame.time.Clock()
 
 
 fps = DEFAULT_FPS
-new_model = lambda : data.get_model(24, 30, 2, 0.0001, encoder_size=10)
-data_getter = data.J_DataGetters.data_sensory
+new_model = lambda :  NNAutoEncoder(
+    24, 24, 2, 0.0001, #model architecture
+    data.J_DataGetters.data_sensory,
+    torch.device("cpu"), torch.float32, encoder_size=4) #others
+
 #new_model = lambda : data.get_rnn_model(24, 30, 4, 0.01)
 prob_decay = 0.2
 prob_rand = 1.0
@@ -48,7 +52,7 @@ def main():
             found = 0
             while state[ALIVE] and state[HUNGER] < MAX_HUNGER:
                 
-                new_x, new_y = data_getter(state)
+                new_x, new_y = model.recorder(state)
                 xs.append(new_x)
                 ys.append(new_y)
 
@@ -56,16 +60,17 @@ def main():
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
-                        data.write_data((data_x, data_y), "dataset")
+                        data.write_data((data_x, data_y), join("data", "dataset"))
                         sys.exit()
+
                 dirty_rects = graphics.render_state(state, background, new_y[0], to_refresh=dirty_rects)
 
 
-                state = game_logic.get_next_state(state, {TURN:data.pick_move(state, model, p_rand=prob_rand, data_recorder=data_getter)})
+                state = game_logic.get_next_state(state, {TURN:model.pick_move(state, p_rand=prob_rand)})
                 
                 if state[SCORE] > old_score:
                     old_score = state[SCORE]
-                    print(f"Added positive response: {rewards.POSITIVE_RESPONSE}")
+                    print(f"Added positive reward: {rewards.POSITIVE_RESPONSE}")
                     xs, ys = data.retro_affect(xs, ys, rewards.POSITIVE_RESPONSE, horizon=30)
                     print(ys[len(ys) - 20:])
 
@@ -82,17 +87,14 @@ def main():
                 dt = t1 - t0
                 t0 = t1
                 fps = keyboard.update_fps(fps)
-            print(f"misses={misses}, found={found}")
-
 
             if state[HUNGER] < MAX_HUNGER:
                 xs, ys = data.retro_affect(xs, ys, rewards.NEGATIVE_RESPONSE, horizon=30)
             data_x += xs
             data_y += ys            
         prob_rand *= prob_decay
-        #model = new_model()
-        data.learn((data_x, data_y), 100, model, torch.optim.Adagrad(model.parameters()),torch.nn.MSELoss())
-        #data.learn_rnn((data_x, data_y), 100, model, torch.optim.Adagrad(model.parameters()),torch.nn.MSELoss())
+        model = new_model()
+        model.learn((data_x, data_y), 100)
 
         
 
