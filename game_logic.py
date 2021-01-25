@@ -3,12 +3,20 @@ from random import randint, random, choice
 from math import sin, cos, radians, isclose
 
 def get_food_pos():
+    """
+    Create a random food position based on the game parameters
+    output: (x, y) the food position
+    """
     return (
         randint(1, (WIDTH//TILE_SIZE) - 1) * TILE_SIZE,
         randint(1, (HEIGHT//TILE_SIZE) - 1) * TILE_SIZE
     )
 
 def get_new_state():
+    """
+    Builds a new game state with everything initializated correctly.
+    output: dict with keys as described in consts.py
+    """
     snake_head = (
         randint(SNAKE_SIZE + 1, (WIDTH//TILE_SIZE) - SNAKE_SIZE) * TILE_SIZE,
         randint(SNAKE_SIZE + 1,  (HEIGHT//TILE_SIZE) - SNAKE_SIZE) * TILE_SIZE
@@ -28,9 +36,19 @@ def get_new_state():
         HAS_FOOD : True,
         SCORE : score,
         ALIVE: alive,
-        HUNGER: 0
+        HUNGER: 0,
+        HIST: [snake_dir for _ in range(HIST_SIZE)]
     }
 
+"""
+given the state at time t and some events,
+computes the next state
+inputs: 
+    state: The state at time t
+    events: Which changes occur
+outputs:
+    state at time t +
+"""
 def get_next_state(state, events):
     turn_dir = events[TURN]
     direction = state[DIR]
@@ -41,6 +59,8 @@ def get_next_state(state, events):
     score = state[SCORE]
     alive = state[ALIVE]
     hunger = state[HUNGER] + 1
+    hist = state[HIST]
+
     if hunger >= MAX_HUNGER:
         alive = False
     #Make the snake go forward
@@ -79,5 +99,6 @@ def get_next_state(state, events):
         HAS_FOOD: has_food,
         ALIVE: alive,
         SCORE: score,
-        HUNGER: hunger
+        HUNGER: hunger,
+        HIST: hist.copy()[len(hist) - HIST_SIZE:]
     }

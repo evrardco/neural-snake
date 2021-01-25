@@ -1,5 +1,6 @@
 from math import isclose
 from consts import *
+from time import time
 def is_opposite(alpha, beta):
     """
     returns -1 if opposite direction, otherwise 1
@@ -22,3 +23,4 @@ def tuple_flatten_state(state):
     new_state[BODY] = tuple(state[BODY])
     new_state[HUNGER] = -1
     return tuple(new_state.items())
+

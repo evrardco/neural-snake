@@ -18,17 +18,18 @@ clk = pygame.time.Clock()
 
 fps = DEFAULT_FPS
 new_model = lambda :  NNAutoEncoder(
-    24, 24, 2, 0.0001, #model architecture
+    29, 29, 2, 0.01, #model architecture
     data.J_DataGetters.data_sensory,
-    torch.device("cpu"), torch.float32, encoder_size=4) #others
+    torch.device("cpu"), torch.float32, encoder_size=8) #others
 
-#new_model = lambda : data.get_rnn_model(24, 30, 4, 0.01)
 prob_decay = 0.2
 prob_rand = 1.0
-
+num_rand = 30
+games_per_gen = 10
+games = num_rand
 def main():
     #rendering precomputing
-    global fps, prob_decay, prob_rand
+    global fps, prob_decay, prob_rand, games
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     background = pygame.Surface((WIDTH, HEIGHT))
     background.fill(graphics.black)
@@ -40,7 +41,7 @@ def main():
     samples = 1000
     for i in range(10000):
 
-        for j in range(10):
+        for j in range(games):
             print(f"iteration {j}")
             prob_rand = 0.1
             xs, ys = [], []
@@ -95,6 +96,7 @@ def main():
         prob_rand *= prob_decay
         model = new_model()
         model.learn((data_x, data_y), 100)
+        games = games_per_gen
 
         
 

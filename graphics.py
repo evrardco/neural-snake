@@ -17,12 +17,10 @@ def refresh(rects, scene):
 
 def draw_body(body, scene, reward):
     f = lambda t: pygame.Rect(t[0], t[1], TILE_SIZE, TILE_SIZE)
-    greenness = int(((10 + reward) / (20 * 10)) * 255)
 
-    col = pygame.Color(128, greenness, 0)
     rects = list(map(f, body))
     for r in rects:
-        scene.fill(col, rect=r)
+        scene.fill(green, rect=r)
     return rects
 
 def draw_score(score, scene):

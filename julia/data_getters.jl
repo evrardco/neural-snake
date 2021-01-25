@@ -8,11 +8,12 @@ module DataGetters
     HAS_FOOD = 5
     ALIVE = 6
     HUNGER = 7
+    HIST = 8
     POSITIVE_RESPONSE = 100.0
     NEGATIVE_RESPONSE = -20.0
     NEUTRAL_RESPONSE = 1.0
     BORDER_THRESHOLD = 10.0
-    HUNGER_FACTOR = 0.001
+    HUNGER_FACTOR = 0.01
     TILE_SIZE = 20
     TERRAIN_DIMS = (30, 30)
     HEIGHT = TERRAIN_DIMS[1] * TILE_SIZE
@@ -39,7 +40,6 @@ module DataGetters
         dist_wall_food_y = min(abs(fy - HEIGHT), fy)
         xs = vcat(xs, [dist_wall_x, dist_wall_y])
         xs = vcat(xs, [dist_wall_food_x, dist_wall_food_y])
-        min_wall_dist = min(dist_wall_x, dist_wall_y)
 
         append!(xs, state[DIR])
         append!(xs, size(state[BODY]))
@@ -60,16 +60,16 @@ module DataGetters
                 x = hx + j * TILE_SIZE * cos(deg2rad(alpha))
                 y = hy + j * TILE_SIZE * cos(deg2rad(alpha))
                 if isapprox(x, fx) && isapprox(y, fy)
-                    sensed[1] = 1 / (1 + j + rand(Float32) * 2)
+                    sensed[1] = 1 / (j + 1)
                 end
-                if j < border_look_ahead && !((0 <= x < WIDTH) && (0 <= y < HEIGHT))
-                    sensed[2] = 1 / (1 + j + rand(Float32) * 2)
+                if ((0 <= x < WIDTH) && (0 <= y < HEIGHT))
+                    sensed[2] = 1 / (j + 1)
                 end
                 if j > 0
                     for part in body
                         if isapprox(x, part[1]) && isapprox(y, part[2])
-                            sensed[3] = 1 / (1 + j + rand(Float32) * 2)
-                        end
+                            sensed[3] = 1 / (j + 1)
+                        end 
                     end
                 end
             end
@@ -93,7 +93,8 @@ module DataGetters
             append!(data, closeness)
         end
         xs, y = data_simple(state)
-        return (vcat(data, xs), y)
+        data = vcat(data, xs)
+        return (vcat(data, state[HIST]), y)
 
     end
     export data_sensory
