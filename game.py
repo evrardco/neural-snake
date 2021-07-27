@@ -18,8 +18,8 @@ clk = pygame.time.Clock()
 
 fps = DEFAULT_FPS
 new_model = lambda :  NNAutoEncoder(
-    29, 29, 2, 0.01, #model architecture
-    data.J_DataGetters.data_sensory,
+    25, 3, 4, 0.0001, #model architecture
+    data.data_sensory,
     torch.device("cpu"), torch.float32, encoder_size=8) #others
 
 prob_decay = 0.2
@@ -27,6 +27,7 @@ prob_rand = 1.0
 num_rand = 30
 games_per_gen = 10
 games = num_rand
+max_games = 100
 def main():
     #rendering precomputing
     global fps, prob_decay, prob_rand, games
@@ -39,10 +40,10 @@ def main():
     data_x, data_y = [], []
     model = new_model()
     samples = 1000
+    max_score = 0
     for i in range(10000):
-
-        for j in range(games):
-            print(f"iteration {j}")
+        while games > 0:
+            print(f"iteration {games_per_gen - games}")
             prob_rand = 0.1
             xs, ys = [], []
             state = game_logic.get_new_state()
@@ -61,7 +62,7 @@ def main():
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
-                        data.write_data((data_x, data_y), join("data", "dataset"))
+                        #data.write_data((data_x, data_y), join("data", "dataset"))
                         sys.exit()
 
                 dirty_rects = graphics.render_state(state, background, new_y[0], to_refresh=dirty_rects)
@@ -79,7 +80,7 @@ def main():
                 screen.blit(background, (0, 0))
                 if dt > 0:
                     screen.blit(
-                        graphics.font.render(f"fps: {int(1/dt)}, target:{fps}, it:{i+j}, data_len:{len(data_x)}", False, graphics.green),
+                        graphics.font.render(f"fps: {int(1/dt)}, target:{fps}, data_len:{len(data_x)}", False, graphics.green),
                         FPS_OFFSETS
                     )
                 pygame.display.update()
@@ -88,15 +89,23 @@ def main():
                 dt = t1 - t0
                 t0 = t1
                 fps = keyboard.update_fps(fps)
-
+            old_max_score = max_score
+            max_score = max(max_score, state[SCORE])
             if state[HUNGER] < MAX_HUNGER:
-                xs, ys = data.retro_affect(xs, ys, rewards.NEGATIVE_RESPONSE, horizon=30)
-            data_x += xs
-            data_y += ys            
+                xs, ys = data.retro_affect(xs, ys, rewards.NEGATIVE_RESPONSE, horizon=10)
+            if state[SCORE] >= 0.5 * max_score:
+                for i in range(len(xs)):
+                    if ys[i][0] != 0:
+                        print(f"{ys[i][0]=}")
+                        data_x.append(xs[i])
+                        data_y.append(ys[i])
+                games -= 1
         prob_rand *= prob_decay
         model = new_model()
-        model.learn((data_x, data_y), 100)
+        if len(data_x) > 0:
+            model.learn((data_x, data_y), 1000)
         games = games_per_gen
+
 
         
 
