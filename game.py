@@ -13,19 +13,21 @@ import graphics
 import keyboard
 import pygame
 from AI.nn_auto_encoder import NNAutoEncoder
+from AI.lstm_ai import LSTMNN
 clk = pygame.time.Clock()
-
+from sklearn.preprocessing import MinMaxScaler
+import numpy as np
 
 fps = DEFAULT_FPS
-new_model = lambda :  NNAutoEncoder(
-    25, 3, 4, 0.0001, #model architecture
-    data.data_sensory,
-    torch.device("cpu"), torch.float32, encoder_size=8) #others
+new_model = lambda :  LSTMNN(
+    12, 50, 3, 0.005, #model architecture
+    data.data_simple,
+    torch.device("cpu"), torch.float32, encoder_size=50) #others
 
 prob_decay = 0.2
 prob_rand = 1.0
-num_rand = 30
-games_per_gen = 10
+num_rand = 10
+games_per_gen = 30
 games = num_rand
 max_games = 100
 def main():
@@ -92,18 +94,21 @@ def main():
             old_max_score = max_score
             max_score = max(max_score, state[SCORE])
             if state[HUNGER] < MAX_HUNGER:
-                xs, ys = data.retro_affect(xs, ys, rewards.NEGATIVE_RESPONSE, horizon=10)
-            if state[SCORE] >= 0.5 * max_score:
-                for i in range(len(xs)):
-                    if ys[i][0] != 0:
-                        print(f"{ys[i][0]=}")
-                        data_x.append(xs[i])
-                        data_y.append(ys[i])
-                games -= 1
+                xs, ys = data.retro_affect(xs, ys, rewards.NEGATIVE_RESPONSE, horizon=50)
+            # if state[SCORE] >= 0.5 * max_score:
+            for i in range(len(xs)):
+                if ys[i][0] != 0:
+                    print(f"{ys[i][0]=}")
+                    data_x.append(xs[i])
+                    data_y.append(ys[i])
+                    data_x = data_x[max(len(data_x) - 5000, 0):]
+                    data_y = data_y[max(len(data_y) - 5000, 0):]
+
+            games -= 1
         prob_rand *= prob_decay
         model = new_model()
         if len(data_x) > 0:
-            model.learn((data_x, data_y), 1000)
+            model.learn((data_x, data_y), 200)
         games = games_per_gen
 
 

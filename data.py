@@ -42,7 +42,7 @@ HUNGER_FACTOR = 0.01
 
 
 def data_simple(state):
-    xs = []
+    xs = [1 if state[ALIVE] else 0]
     fx, fy = state[FOOD]
     dir = state[DIR]
     hx, hy = state[HEAD]
@@ -53,7 +53,7 @@ def data_simple(state):
     dist = abs(fx - hx) + abs(fy - hy)
     xs.append(dist)
     if not state[HAS_FOOD]:
-        goal = POSITIVE_RESPONSE
+        goal = POSITIVE_RESPONSE * state[SCORE]
     
     dist_wall_x = min(abs(hx - WIDTH), hx)
     dist_wall_y = min(abs(hy - HEIGHT), hy)
