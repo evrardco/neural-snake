@@ -53,7 +53,7 @@ def data_simple(state):
     dist = abs(fx - hx) + abs(fy - hy)
     xs.append(dist)
     if not state[HAS_FOOD]:
-        goal = POSITIVE_RESPONSE * state[SCORE]
+        goal = POSITIVE_RESPONSE
     
     dist_wall_x = min(abs(hx - WIDTH), hx)
     dist_wall_y = min(abs(hy - HEIGHT), hy)

@@ -18,7 +18,7 @@ class NNAutoEncoder(BaseAI):
                     torch.nn.Linear(encoder_size, 1)
                 )
         self.optimizer = torch.optim.Adagrad(self.model.parameters())
-        self.criterion = torch.nn.MSELoss()
+        self.criterion = torch.nn.L1Loss()
         self.device = device
         self.dtype = dtype
         self.recorder = data_recorder

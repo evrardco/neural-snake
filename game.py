@@ -20,9 +20,9 @@ import numpy as np
 
 fps = DEFAULT_FPS
 new_model = lambda :  LSTMNN(
-    12, 50, 3, 0.005, #model architecture
-    data.data_simple,
-    torch.device("cpu"), torch.float32, encoder_size=50) #others
+    26, 30, 1, 0.005, #model architecture
+    data.data_sensory,
+    torch.device("cpu"), torch.float32) #others
 
 prob_decay = 0.2
 prob_rand = 1.0
@@ -75,7 +75,7 @@ def main():
                 if state[SCORE] > old_score:
                     old_score = state[SCORE]
                     print(f"Added positive reward: {rewards.POSITIVE_RESPONSE}")
-                    xs, ys = data.retro_affect(xs, ys, rewards.POSITIVE_RESPONSE, horizon=30)
+                    xs, ys = data.retro_affect(xs, ys, rewards.POSITIVE_RESPONSE , horizon=20)
                     print(ys[len(ys) - 20:])
 
 
@@ -94,21 +94,19 @@ def main():
             old_max_score = max_score
             max_score = max(max_score, state[SCORE])
             if state[HUNGER] < MAX_HUNGER:
-                xs, ys = data.retro_affect(xs, ys, rewards.NEGATIVE_RESPONSE, horizon=50)
+                xs, ys = data.retro_affect(xs, ys, 0 * rewards.NEGATIVE_RESPONSE, horizon=3)
             # if state[SCORE] >= 0.5 * max_score:
             for i in range(len(xs)):
-                if ys[i][0] != 0:
-                    print(f"{ys[i][0]=}")
-                    data_x.append(xs[i])
-                    data_y.append(ys[i])
-                    data_x = data_x[max(len(data_x) - 5000, 0):]
-                    data_y = data_y[max(len(data_y) - 5000, 0):]
+                data_x.append(xs[i])
+                data_y.append(ys[i])
+                data_x = data_x[max(len(data_x) - 10000, 0):]
+                data_y = data_y[max(len(data_y) - 10000, 0):]
 
             games -= 1
         prob_rand *= prob_decay
         model = new_model()
         if len(data_x) > 0:
-            model.learn((data_x, data_y), 200)
+            model.learn((data_x, data_y), 100)
         games = games_per_gen
 
 
